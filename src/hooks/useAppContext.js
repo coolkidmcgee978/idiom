@@ -244,20 +244,26 @@ export function AppProvider(props) {
     pressLetter,
     storeService,
   };
-
   useEffect(() => {
     storeService.setItem('pyccy-state', JSON.stringify(state));
   }, [state]);
-
+  
   useEffect(() => {
     if (state.status && statusRef.current !== state.status) {
-      let statistics =
-        JSON.parse(storeService.getItem('pyccy-statistics')) || [];
-      statistics.push([
-        state.startTs,
-        state.status === 'FAIL' ? -1 : state.attempts.history.length,
-      ]);
+      let statistics = JSON.parse(storeService.getItem('pyccy-statistics')) || {
+        playedCount: 0,
+        guessCounts: Array(state.config.maxAttempts).fill(0),
+      };
+
+      statistics.playedCount += 1;
+      if (state.status !== 'FAIL') {
+        let guessCount = state.attempts.history.length;
+        statistics.guessCounts[guessCount - 1] += 1;
+      }
+
+      statusRef.current = state.status;
       storeService.setItem('pyccy-statistics', JSON.stringify(statistics));
+
       fetch(
         `/api/main?action=guess&key=${state.startTs}&token=${window.peaceAndLove}`,
         {

@@ -1,5 +1,10 @@
 const API = '/api/storage';
 
+// Only these keys get written to / read from disk. 'pyccy-state' holds the
+// full in-progress board (guesses, checkResult, history) and resets hourly —
+// no value in persisting it, and it's what was bloating the file.
+const PERSISTED_KEYS = new Set(['pyccy-statistics']);
+
 async function fetchSnapshot() {
   try {
     const res = await fetch(API);
@@ -24,9 +29,6 @@ function deleteKey(key) {
   );
 }
 
-// Pulls the saved snapshot from disk into localStorage before the app
-// mounts, so every synchronous localStorage.getItem() in App.js and
-// useAppContext.js sees the persisted data on first render.
 export async function hydrateLocalStorageFromFile() {
   const snapshot = await fetchSnapshot();
   Object.entries(snapshot).forEach(([key, value]) => {
@@ -34,16 +36,18 @@ export async function hydrateLocalStorageFromFile() {
   });
 }
 
-// Wraps window.localStorage so every write/removal is mirrored to disk.
-// Same getItem/setItem/removeItem shape the app already expects.
 export const fileBackedLocalStorage = {
   getItem: (key) => window.localStorage.getItem(key),
   setItem: (key, value) => {
     window.localStorage.setItem(key, value);
-    persistKey(key, value); // value is already a json string
+    if (PERSISTED_KEYS.has(key)) {
+      persistKey(key, value);
+    }
   },
   removeItem: (key) => {
     window.localStorage.removeItem(key);
-    deleteKey(key);
+    if (PERSISTED_KEYS.has(key)) {
+      deleteKey(key);
+    }
   },
 };

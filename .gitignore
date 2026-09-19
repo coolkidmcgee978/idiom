@@ -25,3 +25,7 @@ yarn-error.log*
 
 _fingerprint.js
 .vercel
+
+#storage
+local-data
+local-data/storage.json

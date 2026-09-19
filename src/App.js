@@ -27,22 +27,11 @@ function App() {
     !localStorage.getItem('pyccy-state')
   );
   let [isShowStatistics, setShowStatistics] = useState(false);
-  let statistics = JSON.parse(localStorage.getItem('pyccy-statistics'));
-  if (statistics) {
-    let simplifiedStatistics = Array(config().maxAttempts + 1).fill(0);
-    statistics.forEach((item) => {
-      let guessCount = item[1];
-      // failed
-      if (guessCount === -1) {
-        simplifiedStatistics[0] += 1;
-      } else {
-        simplifiedStatistics[guessCount] += 1;
-      }
-    });
-    statistics = simplifiedStatistics;
-  } else {
-    statistics = Array(config().maxAttempts + 1).fill(0);
-  }
+  let statistics =
+  JSON.parse(localStorage.getItem('pyccy-statistics')) || {
+    playedCount: 0,
+    guessCounts: Array(config().maxAttempts).fill(0),
+  };
 
   return (
     <AppProvider config={config()} storeService={fileBackedLocalStorage}>
