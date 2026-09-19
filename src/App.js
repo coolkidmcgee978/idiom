@@ -13,6 +13,7 @@ import { useState } from 'react';
 import Statistics from './components/Statistics';
 import './utils/fingerprint';
 import Modal from './components/Modal';
+import { fileBackedLocalStorage } from './services/fileBackedStorage';
 
 const config = () => {
   return {
@@ -44,7 +45,7 @@ function App() {
   }
 
   return (
-    <AppProvider config={config()} storeService={localStorage}>
+    <AppProvider config={config()} storeService={fileBackedLocalStorage}>
       <Inner>
         <div className="flex flex-col justify-between h-full pb-3">
           <Nav
